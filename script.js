@@ -1,14 +1,14 @@
 const canvas = document.querySelector('canvas');
 const ctx = canvas.getContext('2d');
 
-canvas.width = innerWidth;
-canvas.height = innerHeight;
+// canvas.width = innerWidth;
+// canvas.height = innerHeight;
 const fps = 100;
 const blockSize = 60;
 const boundaries = [];
 const foods = [];
-const startPosX = 20;
-const startPosY = 20;
+const startPosX = 0;
+const startPosY = 0;
 
 
 const map = [['1', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '2'], 
@@ -25,6 +25,8 @@ const map = [['1', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '
              ['|', '.', '.', '.', '|', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '|'], 
              ['4', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '3']]
 
+canvas.width = blockSize * map[0].length;
+canvas.height = blockSize * map.length;
 const textToImg = {
     '-' : './images/pipeHorizontal.png',
     '|' : './images/pipeVertical.png',
@@ -50,9 +52,11 @@ const textToImg = {
 class Player{
     constructor(pos){
         this.pos = pos;
-        this.radius = 40;
+        this.radius = 20;
         this.direction = 'down';
-        this.speed = 3;
+        this.speed = 2;
+        this.previousPosX = this.pos.x
+        this.previousPosY = this.pos.y
     }
     draw(){
         ctx.beginPath();
@@ -63,6 +67,8 @@ class Player{
         ctx.closePath();
     }
     move(){
+        this.previousPosX = this.pos.x
+        this.previousPosY = this.pos.y
         if(this.direction == "up"){
             this.pos.y -= this.speed;
         }else if(this.direction == "down"){
@@ -72,7 +78,26 @@ class Player{
         }else if(this.direction == "right"){
             this.pos.x += this.speed;
         }
+        for(let i = 0; i< boundaries.length; i++){
+            if(isTouching(this.pos.x + this.radius, this.pos.x - this.radius, boundaries[i].pos.x, boundaries[i].pos.x + blockSize,this.pos.y + this.radius, this.pos.y - this.radius, boundaries[i].pos.y, boundaries[i].pos.y + blockSize)){
+             console.log("hello")
+             this.pos.x = this.previousPosX
+             this.pos.y = this.previousPosY
+        }
     }
+        for(let i = foods.length - 1; i >= 0 ; i--){
+            if(isTouching(this.pos.x + this.radius, 
+                this.pos.x - this.radius, 
+                foods[i].pos.x - foods[i].radius, 
+                foods[i].pos.x + foods[i].radius,
+                this.pos.y + this.radius, 
+                this.pos.y - this.radius, 
+                foods[i].pos.y - foods[i].radius, 
+                foods[i].pos.y + foods[i].radius)){
+            foods.splice(i, 1)
+        }
+    }
+}
 }
 
 
@@ -89,7 +114,7 @@ class Boundary{
     }
 }
 
-function isTouching(x1, y1, x2, y2, x3, y3, x4, y4){
+function isTouching(x1, x2, x3, x4, y1, y2, y3, y4){
     return x1 >= x3 && x2 <= x4 && y1 >= y3 && y2 <= y4 
 }
 
@@ -108,8 +133,7 @@ class Food{
     }  
 }
 
-const player = new Player({x:10, y:10});
-
+const player = new Player({x:210, y:210});
 document.body.addEventListener('keydown', (e) => {
     if(e.key == 'w'){
         player.direction = 'up';
@@ -134,6 +158,7 @@ function draw(){
     player.draw();
     player.move();
 }
+
 
 for (let i = 0;i < map.length;i++){
     for (let j = 0;j < map[i].length;j++){
@@ -161,4 +186,4 @@ for (let i = 0;i < map.length;i++){
 
 
 
-setInterval(draw, 1000 / fps);
+setInterval(draw, 1000 / fps)
